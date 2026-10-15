@@ -42,7 +42,7 @@ Testzeitraum 2026-01-01 bis 2026-10-14 (287 Tage), Walk-Forward des Engines, 10 
 | B, Seeds 5–9 | +130 773 | 3,03 | 2,62 | 1,78 |
 | A, Seeds 5–9 | +95 980 | 1,61 | 1,40 | 2,52 |
 
-<sub>Engine 74ec0b4, Dataset-Revision 0499790, Code eaf740d. Alle Zahlen in [reports/REPORT.md](reports/REPORT.md) und `reports/backtest.json`.</sub>
+<sub>Engine 74ec0b4, Dataset-Revision 7d3d724, Code 15be57c. Alle Zahlen in [reports/REPORT.md](reports/REPORT.md) und `reports/backtest.json`.</sub>
 
 ## Monate
 

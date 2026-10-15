@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-15T22:31:45.925614+00:00",
+ "generated_at": "2026-10-15T23:03:31.526647+00:00",
  "test_period": {
   "from": "2026-01-01",
   "to": "2026-10-14",
@@ -499,13 +499,13 @@
   }
  },
  "provenance": {
-  "strats_commit": "eaf740dedf29787ac7cbda21fbecdb646dc18c8f",
+  "strats_commit": "15be57cfecb6c7442b50b2790c389bcc7b49b08d",
   "engine_commit": "74ec0b46f3ed58d1b94a4342c5d49f174119cf56",
   "engine_provenance": {
    "code_commit": "74ec0b46f3ed58d1b94a4342c5d49f174119cf56",
    "hf_dataset": "akderekaan/de-power-forecast-data",
    "hf_revisions": [
-    "0499790aa65f5d4afde16c8a2214dc15d4c3207b"
+    "7d3d724b6e83ae9f398e5b2831812600967c312e"
    ],
    "store": {
     "da": {
