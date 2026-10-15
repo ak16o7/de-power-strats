@@ -153,7 +153,8 @@ nicht geändert; die Werte stehen in [`strats/config.py`](strats/config.py).
   mit A, A's Shorts, immer long und den gekappten Werten (`live/ledger.csv`).
 
 <!-- LIVE:START -->
-_Noch kein abgerechneter Tag._
+_Noch kein abgerechneter Tag. Signale liegen in `signals/`, abgerechnet wird, sobald der ID-AEP veröffentlicht ist._
+
 <!-- LIVE:END -->
 
 ## Reproduktion
