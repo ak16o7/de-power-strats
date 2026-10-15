@@ -1,0 +1,52 @@
+name: Backtest
+
+# Weekly: refresh data, rerun the engine's walk-forward, strategy B, its legs and the
+# robustness checks, commit reports and README. Started on Sundays at 08:00 local by the same
+# external scheduler as the live signal (workflow_dispatch API). Own concurrency group, so it
+# never holds up a live run.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: strats-backtest
+  cancel-in-progress: false
+
+jobs:
+  backtest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: true
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: engine/requirements*.txt
+      - uses: actions/cache@v4
+        with:
+          path: |
+            data
+            ~/.cache/huggingface
+          key: strats-data-${{ github.run_id }}
+          restore-keys: strats-data-
+      - run: pip install -r requirements.txt
+      - run: python -m strats fetch --recent-days 14
+        env:
+          ENTSOE_API_KEY: ${{ secrets.ENTSOE_API_KEY }}
+          NTP_CLIENT_ID: ${{ secrets.NTP_CLIENT_ID }}
+          NTP_CLIENT_SECRET: ${{ secrets.NTP_CLIENT_SECRET }}
+      - run: python -m strats backtest --robustness
+      - name: Commit
+        run: |
+          git config user.name "ak16o7"
+          git config user.email "akderekaan@hotmail.com"
+          git add reports README.md
+          if git diff --cached --quiet; then echo "nothing new"; exit 0; fi
+          git commit -m "backtest: $(date -u +%Y-%m-%d)"
+          for i in 1 2 3 4 5; do git pull --rebase && git push && exit 0; sleep 10; done
+          exit 1

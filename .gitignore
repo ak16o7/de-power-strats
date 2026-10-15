@@ -1,0 +1,9 @@
+data/
+work/
+demo*/
+.env
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+reports/*.parquet
