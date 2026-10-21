@@ -1,0 +1,30 @@
+{
+ "strategy": "B",
+ "rule": "engine positions, every short set to zero",
+ "delivery_day": "2026-10-22",
+ "started_at": "2026-10-21T08:53:58.947141+00:00",
+ "generated_at": "2026-10-21T08:55:29.940005+00:00",
+ "gate_closure": "2026-10-21T10:00:00+00:00",
+ "late": false,
+ "quarter_hours": 96,
+ "long": 96,
+ "size_mw": 10.0,
+ "engine_long": 96,
+ "engine_short": 0,
+ "engine_commit": "74ec0b46f3ed58d1b94a4342c5d49f174119cf56",
+ "engine": {
+  "generated_at": "2026-10-21T08:55:29.933348+00:00",
+  "as_of": "2026-10-21T08:53:58.948967+00:00",
+  "threshold_eur_mwh": 2.0,
+  "train_days": 363,
+  "features": 38,
+  "weather_age_h": {
+   "icon_eu": 2.9705413797222224,
+   "ecmwf_ifs": 1.2024858241666667
+  },
+  "spread_last_known_day": "2026-10-19",
+  "hf_revisions": [
+   "04ee0686c49cd0e875339545a514772a7740e135"
+  ]
+ }
+}
