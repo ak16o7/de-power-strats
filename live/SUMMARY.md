@@ -8,7 +8,7 @@
 | Spread gekappt ±200 €/MWh | +11 326 | +2 146 | | |
 | Tage im Plus | 5 von 19 | 9 von 19 | | |
 
-Abbruchgrenze nach 19 Tage (5-%-Quantil des Backtests über gleich lange Zeiträume): -32 051 €, nicht erreicht.
+Abbruchgrenze nach 19 Tage (5-%-Quantil des Backtests über gleich lange Zeiträume): -9 188 €, nicht erreicht.
 Vorab festgelegte Auswertung nach 120 gezählten Tagen: 19 von 120.
 
 | Liefertag | Signal fertig (UTC) | Long-Viertelstunden | B € | A € | immer long € | B kumuliert € |
@@ -28,4 +28,4 @@ Vorab festgelegte Auswertung nach 120 gezählten Tagen: 19 von 120.
 | 2026-11-05 | 2026-11-04 09:55 | 0 | +0 | +830 | -8 289 | +12 096 |
 | 2026-11-06 | 2026-11-05 09:55 | 0 | +0 | +0 | +4 712 | +12 096 |
 
-Warten auf ID-AEP: 2026-11-07, 2026-11-08
+Warten auf ID-AEP: 2026-11-07, 2026-11-08, 2026-11-09
