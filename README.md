@@ -153,20 +153,19 @@ nicht geändert; die Werte stehen in [`strats/config.py`](strats/config.py).
   mit A, A's Shorts, immer long und den gekappten Werten (`live/ledger.csv`).
 
 <!-- LIVE:START -->
-23 Tage abgerechnet (2026-10-19 bis 2026-11-10).
+24 Tage abgerechnet (2026-10-19 bis 2026-11-11).
 
 | | B: Long-only | A: Engine (Referenz) | A's Shorts | immer long |
 |---|---:|---:|---:|---:|
-| Netto € | **+12 096** (+5,18 €/MWh) | +2 617 | -9 479 | +49 115 |
-| Spread gekappt ±200 €/MWh | +11 326 | +2 601 | | |
-| Tage im Plus | 5 von 23 | 11 von 23 | | |
+| Netto € | **+12 096** (+5,18 €/MWh) | +357 | -11 739 | +56 580 |
+| Spread gekappt ±200 €/MWh | +11 326 | +424 | | |
+| Tage im Plus | 5 von 24 | 11 von 24 | | |
 
-Abbruchgrenze nach 23 Tage (5-%-Quantil des Backtests über gleich lange Zeiträume): -9 871 €, nicht erreicht.
-Vorab festgelegte Auswertung nach 120 gezählten Tagen: 23 von 120.
+Abbruchgrenze nach 24 Tage (5-%-Quantil des Backtests über gleich lange Zeiträume): -9 736 €, nicht erreicht.
+Vorab festgelegte Auswertung nach 120 gezählten Tagen: 24 von 120.
 
 | Liefertag | Signal fertig (UTC) | Long-Viertelstunden | B € | A € | immer long € | B kumuliert € |
 |---|---|---:|---:|---:|---:|---:|
-| 2026-10-28 | 2026-10-27 09:55 | 59 | -1 939 | -2 688 | -1 452 | +14 484 |
 | 2026-10-29 | 2026-10-28 09:54 | 84 | -6 141 | -4 626 | -8 946 | +8 342 |
 | 2026-10-30 | 2026-10-29 09:55 | 33 | -226 | +662 | -2 658 | +8 117 |
 | 2026-10-31 | 2026-10-30 09:55 | 72 | +3 980 | +3 266 | +5 061 | +12 096 |
@@ -180,8 +179,9 @@ Vorab festgelegte Auswertung nach 120 gezählten Tagen: 23 von 120.
 | 2026-11-08 | 2026-11-07 09:55 | 0 | +0 | -234 | +134 | +12 096 |
 | 2026-11-09 | 2026-11-08 09:55 | 0 | +0 | +318 | +10 609 | +12 096 |
 | 2026-11-10 | 2026-11-09 09:55 | 0 | +0 | -635 | +3 804 | +12 096 |
+| 2026-11-11 | 2026-11-10 09:55 | 0 | +0 | -2 260 | +7 464 | +12 096 |
 
-Warten auf ID-AEP: 2026-11-11, 2026-11-12
+Warten auf ID-AEP: 2026-11-12, 2026-11-13
 
 <!-- LIVE:END -->
 
