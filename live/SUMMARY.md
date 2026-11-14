@@ -1,19 +1,18 @@
 # Live-Track-Record: B (Long-only)
 
-25 Tage abgerechnet (2026-10-19 bis 2026-11-12).
+26 Tage abgerechnet (2026-10-19 bis 2026-11-13).
 
 | | B: Long-only | A: Engine (Referenz) | A's Shorts | immer long |
 |---|---:|---:|---:|---:|
-| Netto € | **+12 096** (+5,18 €/MWh) | +295 | -11 801 | +53 872 |
+| Netto € | **+12 096** (+5,18 €/MWh) | +295 | -11 801 | +53 772 |
 | Spread gekappt ±200 €/MWh | +11 326 | +362 | | |
-| Tage im Plus | 5 von 25 | 11 von 25 | | |
+| Tage im Plus | 5 von 26 | 11 von 26 | | |
 
-Abbruchgrenze nach 25 Tage (5-%-Quantil des Backtests über gleich lange Zeiträume): -9 859 €, nicht erreicht.
-Vorab festgelegte Auswertung nach 120 gezählten Tagen: 25 von 120.
+Abbruchgrenze nach 26 Tage (5-%-Quantil des Backtests über gleich lange Zeiträume): -10 195 €, nicht erreicht.
+Vorab festgelegte Auswertung nach 120 gezählten Tagen: 26 von 120.
 
 | Liefertag | Signal fertig (UTC) | Long-Viertelstunden | B € | A € | immer long € | B kumuliert € |
 |---|---|---:|---:|---:|---:|---:|
-| 2026-10-30 | 2026-10-29 09:55 | 33 | -226 | +662 | -2 658 | +8 117 |
 | 2026-10-31 | 2026-10-30 09:55 | 72 | +3 980 | +3 266 | +5 061 | +12 096 |
 | 2026-11-01 | 2026-10-31 09:55 | 0 | +0 | +136 | -1 126 | +12 096 |
 | 2026-11-02 | 2026-11-01 09:55 | 0 | +0 | -2 730 | +12 914 | +12 096 |
@@ -27,5 +26,6 @@ Vorab festgelegte Auswertung nach 120 gezählten Tagen: 25 von 120.
 | 2026-11-10 | 2026-11-09 09:55 | 0 | +0 | -635 | +3 804 | +12 096 |
 | 2026-11-11 | 2026-11-10 09:55 | 0 | +0 | -2 260 | +7 464 | +12 096 |
 | 2026-11-12 | 2026-11-11 09:55 | 0 | +0 | -62 | -2 707 | +12 096 |
+| 2026-11-13 | 2026-11-12 09:55 | 0 | +0 | +0 | -100 | +12 096 |
 
-Warten auf ID-AEP: 2026-11-13, 2026-11-14
+Warten auf ID-AEP: 2026-11-14, 2026-11-15
