@@ -17,18 +17,18 @@ Der Spread ID-AEP − DA ist in der typischen Viertelstunde leicht negativ und i
 positiv. Der Mittelwert stammt aus einem sehr kleinen Teil der Viertelstunden:
 
 <!-- ANATOMY:START -->
-Alle 39 268 Viertelstunden von 2025-10-01 bis 2026-11-14:
+Alle 39 940 Viertelstunden von 2025-10-01 bis 2026-11-21:
 
 | ID-AEP − DA | €/MWh |
 |---|---:|
-| Mittelwert | +3,91 |
-| **Median** | **-1,06** |
-| Mittelwert ohne die äußersten 5 % je Seite | +0,07 |
-| Mittelwert der Viertelstunden mit \|Spread\| ≤ 100 €/MWh | -0,94 |
+| Mittelwert | +3,51 |
+| **Median** | **-1,18** |
+| Mittelwert ohne die äußersten 5 % je Seite | -0,21 |
+| Mittelwert der Viertelstunden mit \|Spread\| ≤ 100 €/MWh | -1,16 |
 | Anteil Viertelstunden mit ID-AEP > DA | 48 % |
-| Anteil des obersten 1 % an der Summe aller Spreads | **118 %** |
+| Anteil des obersten 1 % an der Summe aller Spreads | **131 %** |
 
-Spikes über +200 €/MWh: 321 Viertelstunden an 103 Tagen; unter −200 €/MWh: 69. Sie häufen sich in den Rampenstunden (Grafik unten).
+Spikes über +200 €/MWh: 322 Viertelstunden an 104 Tagen; unter −200 €/MWh: 69. Sie häufen sich in den Rampenstunden (Grafik unten).
 
 <!-- ANATOMY:END -->
 
@@ -61,35 +61,35 @@ und der Data Guard sind die des Engines.
 ## Ergebnis
 
 <!-- RESULTS:START -->
-Testzeitraum 2026-01-01 bis 2026-11-13 (317 Tage), Walk-Forward des Engines, 10 MW je Viertelstunde, Kosten 1,5 €/MWh Round Trip, Exit ID-AEP. Stand 2026-11-15.
+Testzeitraum 2026-01-01 bis 2026-11-20 (324 Tage), Walk-Forward des Engines, 10 MW je Viertelstunde, Kosten 1,5 €/MWh Round Trip, Exit ID-AEP. Stand 2026-11-22.
 
 | | **B: Long-only** | A: Engine | immer long |
 |---|---:|---:|---:|
-| Netto-PnL € | +152 236 | +121 450 | +260 590 |
-| Volumen MWh | 23 198 | 34 715 | 76 080 |
-| €/MWh | +6,56 | +3,50 | +3,43 |
-| Sharpe p. a. (täglich) | 2,79 | 1,77 | 2,33 |
-| t (HAC, täglich) | 2,58 | 1,61 | 1,85 |
-| Max. Drawdown € | -25 064 | -72 617 | -129 624 |
-| Schlechtester Tag € | -19 759 | -30 602 | -48 138 |
-| Break-even-Slippage €/MWh | 7,6 | 4,5 | 4,4 |
-| Spread gekappt ±200 €/MWh: PnL € (t) | +86 807 (2,61) | +119 939 (2,85) | +66 250 (0,70) |
-| Spread gekappt ±100 €/MWh: PnL € (t) | +49 749 (1,68) | +95 250 (2,63) | -32 620 (-0,40) |
-| ohne die 10 besten Tage € | +16 586 | -15 232 | +37 519 |
-| die 10 besten Viertelstunden € | +60 622 | +60 622 | +77 833 |
-| Sharpe 1. / 2. Hälfte | 0,59 / 4,18 | 1,39 / 2,12 | 0,31 / 4,26 |
-| Monate im Plus | 6 von 11 | 6 von 11 | 8 von 11 |
+| Netto-PnL € | +181 537 | +152 275 | +224 318 |
+| Volumen MWh | 25 100 | 38 322 | 77 760 |
+| €/MWh | +7,23 | +3,97 | +2,88 |
+| Sharpe p. a. (täglich) | 2,99 | 2,02 | 1,96 |
+| t (HAC, täglich) | 2,72 | 1,95 | 1,55 |
+| Max. Drawdown € | -25 264 | -67 736 | -129 624 |
+| Schlechtester Tag € | -19 604 | -31 934 | -48 138 |
+| Break-even-Slippage €/MWh | 8,2 | 5,0 | 3,9 |
+| Spread gekappt ±200 €/MWh: PnL € (t) | +99 661 (2,70) | +137 765 (3,05) | +29 952 (0,30) |
+| Spread gekappt ±100 €/MWh: PnL € (t) | +54 577 (1,71) | +106 126 (2,77) | -67 571 (-0,79) |
+| ohne die 10 besten Tage € | +27 664 | -8 630 | +1 247 |
+| die 10 besten Viertelstunden € | +62 240 | +62 240 | +77 833 |
+| Sharpe 1. / 2. Hälfte | 0,32 / 4,56 | 1,06 / 2,66 | 0,17 / 3,63 |
+| Monate im Plus | 6 von 11 | 6 von 11 | 7 von 11 |
 
-- **Zerlegung:** A = B + A's Shorts. Die Shorts allein: -30 786 € auf 11 518 MWh (t -0,63).
-- **B gegen A:** +97 €/Tag; bei gleichem Risiko t = 1,36; Sharpe-Differenz +1,02, Block-Bootstrap P(Sharpe B > A) = 0,85, 90-%-Intervall [-0,49; 2,49].
-- **B gegen A, Spread gekappt ±200 €/MWh:** bei gleichem Risiko t = -0,83, P(Sharpe B > A) = 0,20.
-- **B gegen immer long:** bei gleichem Risiko t = 0,42; P(Sharpe B > immer long) = 0,69, 90-%-Intervall [-1,10; 1,94].
+- **Zerlegung:** A = B + A's Shorts. Die Shorts allein: -29 262 € auf 13 222 MWh (t -0,57).
+- **B gegen A:** +90 €/Tag; bei gleichem Risiko t = 1,31; Sharpe-Differenz +0,97, Block-Bootstrap P(Sharpe B > A) = 0,86, 90-%-Intervall [-0,42; 2,34].
+- **B gegen A, Spread gekappt ±200 €/MWh:** bei gleichem Risiko t = -0,77, P(Sharpe B > A) = 0,21.
+- **B gegen immer long:** bei gleichem Risiko t = 0,99; P(Sharpe B > immer long) = 0,88, 90-%-Intervall [-0,42; 2,42].
 
 **Lesart**
 
-- Ungekappt hat B die höhere Sharpe (2,79 gegen 1,77), mit gekapptem Spread A (3,06 gegen 2,46). B gewinnt also über die Spike-Flanke, A über die normalen Viertelstunden. Welche Sicht gilt, hängt davon ab, ob die Spike-Preise des ID-AEP tatsächlich erzielbar sind.
-- Konzentration: Ohne seine 10 besten Tage bleiben von B +16 586 € (11 % des Gewinns). Das Profil ist rechtsschief: viele kleine Verlusttage, wenige große Gewinntage.
-- Die unbedingte Long-Prämie (immer long: Sharpe 2,33, gekappt ±200: +66 250 €) ist fast vollständig Spike-Prämie. B filtert sie mit den Prognosen des Engines: gekappt ±200 bleibt B bei +86 807 €.
+- Ungekappt hat B die höhere Sharpe (2,99 gegen 2,02), mit gekapptem Spread A (3,22 gegen 2,61). B gewinnt also über die Spike-Flanke, A über die normalen Viertelstunden. Welche Sicht gilt, hängt davon ab, ob die Spike-Preise des ID-AEP tatsächlich erzielbar sind.
+- Konzentration: Ohne seine 10 besten Tage bleiben von B +27 664 € (15 % des Gewinns). Das Profil ist rechtsschief: viele kleine Verlusttage, wenige große Gewinntage.
+- Die unbedingte Long-Prämie (immer long: Sharpe 1,96, gekappt ±200: +29 952 €) ist fast vollständig Spike-Prämie. B filtert sie mit den Prognosen des Engines: gekappt ±200 bleibt B bei +99 661 €.
 
 ![PnL](reports/pnl.png)
 
@@ -97,13 +97,13 @@ Testzeitraum 2026-01-01 bis 2026-11-13 (317 Tage), Walk-Forward des Engines, 10 
 
 | Variante | PnL € | Sharpe | t | t gekappt ±200 |
 |---|---:|---:|---:|---:|
-| feste Schwelle 2 €/MWh | +154 758 | 2,08 | 1,80 | 2,10 |
-| feste Schwelle 5 €/MWh | +145 660 | 2,22 | 1,95 | 2,21 |
-| feste Schwelle 10 €/MWh | +129 208 | 2,71 | 2,47 | 2,79 |
-| B, Seeds 5–9 | +137 126 | 2,00 | 1,77 | 2,18 |
-| A, Seeds 5–9 | +129 288 | 1,61 | 1,47 | 3,01 |
+| feste Schwelle 2 €/MWh | +154 161 | 2,01 | 1,76 | 1,95 |
+| feste Schwelle 5 €/MWh | +148 397 | 2,18 | 1,94 | 2,15 |
+| feste Schwelle 10 €/MWh | +131 842 | 2,67 | 2,45 | 2,64 |
+| B, Seeds 5–9 | +160 873 | 2,93 | 2,75 | 2,74 |
+| A, Seeds 5–9 | +152 737 | 2,17 | 2,08 | 3,63 |
 
-<sub>Engine 74ec0b4, Dataset-Revision 9cef7d2, Code a399eba. Alle Zahlen in [reports/REPORT.md](reports/REPORT.md) und `reports/backtest.json`.</sub>
+<sub>Engine 74ec0b4, Dataset-Revision 8eabc65, Code db29be3. Alle Zahlen in [reports/REPORT.md](reports/REPORT.md) und `reports/backtest.json`.</sub>
 
 <!-- RESULTS:END -->
 
