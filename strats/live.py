@@ -1,9 +1,11 @@
 """Live track record of B: tomorrow's positions before the 12:00 auction, settled once the
 ID-AEP is out.
 
-signal: runs the engine's live signal (de-power-spread, unchanged) into a scratch folder and
-        sets its shorts to zero. Same window as the engine, 10:45-11:50 local; a file finished
-        after 11:50 is marked late and never counted. The push of signals/YYYY-MM-DD.* and the
+signal: takes the engine's signal as de-power-spread published it and sets its shorts to zero.
+        If it is not published yet, waits for a later slot; only from 11:15 local runs the
+        engine itself (with the engine's published month model, if any) and marks the day as
+        an own run. Same window as the engine, 10:45-11:50 local; a file finished after 11:50
+        is marked late and never counted. The push of signals/YYYY-MM-DD.* and the
         Actions run log are the timestamped public record.
 settle: books every counted signal whose ID-AEP is known, with the engine's PnL function,
         together with its legs (A, A's shorts, always long, capped spread), into
@@ -11,25 +13,28 @@ settle: books every counted signal whose ID-AEP is known, with the engine's PnL 
 """
 from __future__ import annotations
 
+import io
 import json
 import logging
+import os
 from datetime import date, timedelta
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import requests
 
 from . import ENGINE, analysis, config, rule
 from dps import config as dconf
 from dps import live as engine_live
 from dps import store
 from dps.report import _fmt, update_section
-from dps.util import BERLIN, gate_closure, now, qh_index, spread_known_at
+from dps.util import BERLIN, gate_closure, issue_time, now, qh_index, spread_known_at
 
 LOG = logging.getLogger(__name__)
 CAP = config.CAPS[0]
 COLUMNS = ["day", "late", "generated_at", "qh_long", "mwh_b", "net_b", "net_a", "net_a_short", "net_always_long",
-           f"net_b_cap{int(CAP)}", f"net_a_cap{int(CAP)}", "missing_exit_qh"]
+           f"net_b_cap{int(CAP)}", f"net_a_cap{int(CAP)}", "missing_exit_qh", "engine_source"]
 
 
 def _paths(day: date, root: str | None = None) -> tuple[Path, Path]:
@@ -57,18 +62,80 @@ def status(day: date | None = None, t: pd.Timestamp | None = None) -> dict:
     return {"status": s, "day": str(day), "opens": opens.isoformat(), "closes": closes.isoformat()}
 
 
+def _engine_file(path: str) -> bytes | None:
+    """A file of the engine repository's main branch, None if it does not exist (yet)."""
+    headers = {"Accept": "application/vnd.github.raw", "X-GitHub-Api-Version": "2022-11-28"}
+    if os.environ.get("GITHUB_TOKEN"):
+        headers["Authorization"] = f"Bearer {os.environ['GITHUB_TOKEN']}"
+    url = f"https://api.github.com/repos/{config.ENGINE_REPO}/contents/{path}"
+    for attempt in range(3):
+        try:
+            r = requests.get(url, headers=headers, params={"ref": "main"}, timeout=30)
+        except requests.RequestException as exc:
+            LOG.warning("engine file %s: %s", path, type(exc).__name__)
+            continue
+        if r.status_code == 404:
+            return None
+        if r.ok:
+            return r.content
+        LOG.warning("engine file %s: HTTP %s", path, r.status_code)
+    return None
+
+
+def published_signal(day: date) -> tuple[pd.DataFrame, dict] | None:
+    """The engine's signal for `day` as de-power-spread committed it, if complete and consistent."""
+    js = _engine_file(f"signals/{day:%Y-%m-%d}.json")
+    csv = _engine_file(f"signals/{day:%Y-%m-%d}.csv") if js else None
+    if js is None or csv is None:
+        return None
+    meta = json.loads(js)
+    a = pd.read_csv(io.BytesIO(csv))
+    ok = (meta.get("delivery_day") == str(day) and len(a) == len(qh_index(day))
+          and set(a["side"].unique()) <= {-1, 0, 1})
+    if not ok:
+        LOG.warning("published engine signal for %s is inconsistent, ignored", day)
+        return None
+    return a, meta
+
+
+def fetch_month_model(day: date) -> bool:
+    """Copy the engine's published model of `day`'s month into the engine's scratch live
+    folder, so an own run uses the same frozen model. Best effort."""
+    pkl, js = engine_live.model_paths(day)
+    files = {p: _engine_file(f"live/models/{p.name}") for p in (pkl, js)}
+    if any(v is None for v in files.values()):
+        return False
+    pkl.parent.mkdir(parents=True, exist_ok=True)
+    for p, data in files.items():
+        p.write_bytes(data)
+    return True
+
+
 def signal(day: date | None = None, force: bool = False) -> dict:
     t = now()
     day = day or _tomorrow(t)
     st = status(day, t)
     if st["status"] != "due" and not force:
         return st
-    eng = engine_live.signal(day, force=force)
-    a_csv, a_json = _paths(day, dconf.SIGNALS_DIR)
-    if eng.get("status") not in ("written", "exists") or not a_json.exists():
-        return {"status": f"engine: {eng.get('status')}", "day": str(day)}
-    a = pd.read_csv(a_csv)
-    ameta = json.loads(a_json.read_text())
+    pub = published_signal(day)
+    if pub is not None:
+        a, ameta = pub
+        source = "published"
+    else:
+        fallback_from = issue_time(day) + pd.Timedelta(minutes=config.ENGINE_FALLBACK_MIN_AFTER_ISSUE)
+        if t < fallback_from and not force:
+            return {"status": "waiting for the engine's published signal", "day": str(day),
+                    "own_run_from": fallback_from.isoformat()}
+        model = fetch_month_model(day)
+        eng = engine_live.signal(day, force=force)
+        a_csv, a_json = _paths(day, dconf.SIGNALS_DIR)
+        if eng.get("status") not in ("written", "exists") or not a_json.exists():
+            return {"status": f"engine: {eng.get('status')}", "day": str(day)}
+        a = pd.read_csv(a_csv)
+        ameta = json.loads(a_json.read_text())
+        source = "own_run"
+        LOG.warning("no published engine signal for %s: own engine run (%s month model)", day,
+                    "published" if model else "own")
     side_a = a["side"].to_numpy(dtype="float64")
     side_b = rule.long_only(side_a)
     out = pd.DataFrame({"ts_utc": a["ts_utc"], "local": a["local"], "side": side_b.astype(int),
@@ -84,9 +151,10 @@ def signal(day: date | None = None, force: bool = False) -> dict:
         "gate_closure": gate_closure(day).isoformat(), "late": bool(written > engine_live.window(day)[1]),
         "quarter_hours": int(len(out)), "long": int((side_b > 0).sum()), "size_mw": ameta["size_mw"],
         "engine_long": int((side_a > 0).sum()), "engine_short": int((side_a < 0).sum()),
-        "engine_commit": analysis._git(ENGINE),
+        "engine_source": source,
+        "engine_commit": analysis._git(ENGINE) if source == "own_run" else None,
         "engine": {k: ameta.get(k) for k in ("generated_at", "as_of", "threshold_eur_mwh", "train_days", "features",
-                                             "weather_age_h", "spread_last_known_day", "hf_revisions")},
+                                             "weather_age_h", "spread_last_known_day", "hf_revisions", "model")},
     }
     meta_path.write_text(json.dumps(meta, indent=1))
     LOG.info("signal %s: %d long (engine %d long, %d short)%s", day, meta["long"], meta["engine_long"],
@@ -156,7 +224,8 @@ def settle() -> dict:
                      "net_always_long": round(float(r["always_long"]["net"].sum()), 2),
                      f"net_b_cap{int(CAP)}": round(float(analysis.leg_pnl(legs["B"], m, CAP)["net"].sum()), 2),
                      f"net_a_cap{int(CAP)}": round(float(analysis.leg_pnl(legs["A"], m, CAP)["net"].sum()), 2),
-                     "missing_exit_qh": int(r["B"]["missing_exit"].sum())})
+                     "missing_exit_qh": int(r["B"]["missing_exit"].sum()),
+                     "engine_source": meta.get("engine_source", "")})
     ledger = pd.DataFrame(rows, columns=COLUMNS)
     live = Path(config.LIVE_DIR)
     live.mkdir(parents=True, exist_ok=True)
@@ -182,6 +251,10 @@ def live_markdown(ledger: pd.DataFrame, pending: list[str], missing: list[str] =
     notes = []
     if len(late):
         notes.append(f"Nach 11:50 fertig und deshalb nicht gezählt: {', '.join(late['day'])}")
+    own = ledger[ledger["engine_source"] == "own_run"] if "engine_source" in ledger and not ledger.empty else ledger.iloc[0:0]
+    if len(own):
+        notes.append("Engine-Signal selbst gerechnet, weil de-power-spread bis 11:15 keins veröffentlicht hatte "
+                     f"(A kann vom Engine-Record abweichen): {', '.join(own['day'])}")
     if missing:
         notes.append(f"Kein Signal (kein Lauf rechtzeitig gestartet oder Data Guard, Grund im Actions-Log): {', '.join(missing)}")
     if pending:

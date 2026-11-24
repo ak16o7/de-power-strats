@@ -146,9 +146,16 @@ nicht geändert; die Werte stehen in [`strats/config.py`](strats/config.py).
 ## Live-Track-Record
 
 - **Ablauf:** Täglich um 10:52 startet ein externer Scheduler die GitHub Action über die API
-  (11:20 als Reserve, 18:35 für die Abrechnung). Sie rechnet das Signal des Engines neu, setzt
-  die Shorts auf null und committet nach `signals/` (`side` = B, `side_engine` = A).
-  Push-Zeitpunkt und Lauf-Protokoll belegen, dass das Signal vor Gate Closure existierte.
+  (11:20 als Reserve, 18:35 für die Abrechnung). Sie übernimmt das Signal, das das Engine
+  selbst veröffentlicht hat (`signals/` in de-power-spread), setzt die Shorts auf null und
+  committet nach `signals/` (`side` = B, `side_engine` = A). A ist damit Viertelstunde für
+  Viertelstunde der Live-Record des Engines. Push-Zeitpunkt und Lauf-Protokoll belegen, dass
+  das Signal vor Gate Closure existierte.
+- **Ersatz:** Fehlt das Signal des Engines um 11:15 noch, rechnet die Action das Engine selbst,
+  mit dessen abgelegtem Monatsmodell, falls vorhanden. Solche Tage stehen im Ledger
+  (`engine_source = own_run`) und unten im Live-Block. Bis 30.11.2026 wurde A hier immer selbst
+  gerechnet, einige Minuten nach dem Engine und damit teils auf neueren Daten; am 17.11.2026
+  wich A deshalb in einer Viertelstunde vom Engine-Record ab (−201 €).
 - **Abrechnung:** nach Veröffentlichung des ID-AEP mit der PnL-Funktion des Engines, zusammen
   mit A, A's Shorts, immer long und den gekappten Werten (`live/ledger.csv`).
 

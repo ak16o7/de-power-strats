@@ -1,17 +1,32 @@
 """Live B: same procedure as the backtest, same window, settled with the same PnL function."""
 import json
 from datetime import timedelta
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
+from dps import config as dconf
+from dps import live as engine_live
 from dps import store, trading
 from dps.util import issue_time
 from strats import analysis, config, live, rule
 
 
+def serve(monkeypatch, **dirs):
+    """Serve the engine repository's files from local folders: serve(signals=..., models=...)."""
+    def fake(path):
+        folder, name = path.rsplit("/", 1)
+        base = dirs.get(folder.split("/")[-1])
+        f = Path(base) / name if base else None
+        return f.read_bytes() if f is not None and f.is_file() else None
+    monkeypatch.setattr(live, "_engine_file", fake)
+
+
 def test_live_signal_equals_backtest(planted, monkeypatch):
+    """Own engine run (nothing published): B is still the backtest's engine without shorts."""
     root, start, end = planted
+    monkeypatch.setattr(config, "ENGINE_FALLBACK_MIN_AFTER_ISSUE", -60)
     analysis.run(start, end)
     eng = pd.read_parquet(root / "engine" / "reports_dir" / "backtest.parquet")
     day = end - timedelta(days=9)
@@ -19,7 +34,7 @@ def test_live_signal_equals_backtest(planted, monkeypatch):
     assert len(bt) and (bt > 0).any()
     monkeypatch.setenv("DPS_NOW", issue_time(day).isoformat())
     out = live.signal(day)
-    assert out["status"] == "written" and not out["late"]
+    assert out["status"] == "written" and not out["late"] and out["engine_source"] == "own_run"
     sig = pd.read_csv(root / "signals" / f"{day}.csv")
     side = pd.Series(sig["side"].to_numpy(dtype=float), index=pd.to_datetime(sig["ts_utc"], utc=True))
     assert np.array_equal(side.to_numpy(), rule.long_only(bt.reindex(side.index).to_numpy()))
@@ -53,6 +68,7 @@ def test_late_signal_is_not_counted(planted, monkeypatch):
 
 def test_settlement_and_legs(planted, monkeypatch):
     root, start, end = planted
+    monkeypatch.setattr(config, "ENGINE_FALLBACK_MIN_AFTER_ISSUE", -60)
     d1, d2 = end - timedelta(days=8), end - timedelta(days=6)        # d1 + 1 day has no signal
     for d in (d1, d2):
         monkeypatch.setenv("DPS_NOW", (issue_time(d) - pd.Timedelta(minutes=5)).isoformat())
@@ -89,3 +105,60 @@ def test_kill_line_and_evaluation(planted, monkeypatch):
     assert ev["b_replaces_a"] is True
     assert live.evaluation(big.rename(columns={"net_b": "net_a", "net_a": "net_b", "net_b_cap200": "net_a_cap200",
                                                "net_a_cap200": "net_b_cap200"}))["b_replaces_a"] is False
+
+
+def test_b_is_built_from_the_published_engine_signal(planted, monkeypatch, tmp_path):
+    """The engine's own record is the source of A: no engine run here, positions identical."""
+    root, start, end = planted
+    day = end - timedelta(days=9)
+    monkeypatch.setenv("DPS_NOW", issue_time(day).isoformat())
+    monkeypatch.setattr(dconf, "SIGNALS_DIR", str(tmp_path / "spread_signals"))   # de-power-spread's repo
+    monkeypatch.setattr(dconf, "LIVE_DIR", str(tmp_path / "spread_live"))
+    assert engine_live.signal(day)["status"] == "written"
+    serve(monkeypatch, signals=tmp_path / "spread_signals")
+    runs = []
+    monkeypatch.setattr(engine_live, "signal", lambda *a, **k: runs.append(a) or {"status": "x"})
+    monkeypatch.setenv("DPS_NOW", (issue_time(day) + pd.Timedelta(minutes=8)).isoformat())
+    out = live.signal(day)
+    assert out["status"] == "written" and out["engine_source"] == "published" and runs == []
+    a = pd.read_csv(tmp_path / "spread_signals" / f"{day}.csv")
+    b = pd.read_csv(root / "signals" / f"{day}.csv")
+    assert np.array_equal(b["side_engine"], a["side"]) and np.array_equal(b["side"], rule.long_only(a["side"]))
+    assert out["engine"]["model"]["file"] == f"models/{day:%Y-%m}.pkl.gz" and out["engine_commit"] is None
+
+
+def test_waits_for_the_engine_then_runs_it_with_its_month_model(planted, monkeypatch, tmp_path):
+    root, start, end = planted
+    d0, day = end - timedelta(days=10), end - timedelta(days=9)
+    assert d0.month == day.month
+    # de-power-spread has fitted this month's model (signal of d0) but not yet published day's signal
+    monkeypatch.setattr(dconf, "SIGNALS_DIR", str(tmp_path / "spread_signals"))
+    monkeypatch.setattr(dconf, "LIVE_DIR", str(tmp_path / "spread_live"))
+    monkeypatch.setenv("DPS_NOW", issue_time(d0).isoformat())
+    assert engine_live.signal(d0)["status"] == "written"
+    serve(monkeypatch, signals=tmp_path / "spread_signals", models=tmp_path / "spread_live" / "models")
+    monkeypatch.setattr(dconf, "SIGNALS_DIR", str(tmp_path / "scratch_signals"))  # this repo's scratch folder
+    monkeypatch.setattr(dconf, "LIVE_DIR", str(tmp_path / "scratch_live"))
+    monkeypatch.setenv("DPS_NOW", (issue_time(day) + pd.Timedelta(minutes=5)).isoformat())
+    out = live.signal(day)
+    assert out["status"].startswith("waiting") and not (root / "signals" / f"{day}.csv").exists()
+    monkeypatch.setenv("DPS_NOW", (issue_time(day) + pd.Timedelta(minutes=20)).isoformat())
+    out = live.signal(day)
+    assert out["status"] == "written" and out["engine_source"] == "own_run" and out["engine_commit"]
+    assert out["engine"]["model"]["loaded"] is True                        # the engine's frozen model
+    assert out["engine"]["model"]["trained_for_day"] == str(d0)
+    note = live.live_markdown(pd.DataFrame([{"day": str(day), "late": False, "net_b": 1.0, "net_a": 1.0, "net_a_short": 0.0,
+                                             "net_always_long": 0.0, "mwh_b": 1.0, "qh_long": 1, "generated_at": "2026-02-18T10:20:00+00:00",
+                                             "net_b_cap200": 1.0, "net_a_cap200": 1.0, "missing_exit_qh": 0,
+                                             "engine_source": "own_run"}]), [])
+    assert "selbst gerechnet" in note and str(day) in note
+
+
+def test_an_inconsistent_published_signal_is_not_used(planted, monkeypatch, tmp_path):
+    root, start, end = planted
+    day = end - timedelta(days=9)
+    (tmp_path / "pub").mkdir()
+    (tmp_path / "pub" / f"{day}.json").write_text(json.dumps({"delivery_day": str(day - timedelta(days=1))}))
+    (tmp_path / "pub" / f"{day}.csv").write_text("ts_utc,local,side,size_mw,pred_spread_eur_mwh\n")
+    serve(monkeypatch, signals=tmp_path / "pub")
+    assert live.published_signal(day) is None

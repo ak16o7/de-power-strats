@@ -20,6 +20,13 @@ def one_seed(monkeypatch):
     monkeypatch.setattr(dconf, "MODEL_SEEDS", (0,))
 
 
+@pytest.fixture(autouse=True)
+def no_github(monkeypatch):
+    """No network: the engine's published files are absent unless a test serves them."""
+    from strats import live
+    monkeypatch.setattr(live, "_engine_file", lambda path: None)
+
+
 @pytest.fixture(scope="session")
 def world(tmp_path_factory):
     root = tmp_path_factory.mktemp("world")

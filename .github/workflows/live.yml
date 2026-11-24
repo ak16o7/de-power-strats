@@ -61,6 +61,8 @@ jobs:
       - name: Signal for tomorrow
         if: steps.gate.outputs.due == 'true'
         run: python -m strats signal
+        env:
+          GITHUB_TOKEN: ${{ github.token }}   # reads de-power-spread's published signal
       - name: Settle earlier signals
         if: steps.gate.outputs.due == 'true' || github.event_name == 'workflow_dispatch' || github.event.schedule == '35 16 * * *'
         run: python -m strats settle
