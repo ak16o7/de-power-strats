@@ -28,4 +28,4 @@ Vorab festgelegte Auswertung nach 120 gezählten Tagen: 39 von 120.
 | 2026-11-25 | 2026-11-24 09:55 | 0 | +0 | +0 | -4 065 | +12 441 |
 | 2026-11-26 | 2026-11-25 09:54 | 0 | +0 | +0 | -1 282 | +12 441 |
 
-Warten auf ID-AEP: 2026-11-27
+Warten auf ID-AEP: 2026-11-27, 2026-11-28
